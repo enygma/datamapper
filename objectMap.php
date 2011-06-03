@@ -28,37 +28,61 @@ class Sample
 }
 class Ticket
 {
-    public $foo     = null;
-    public $sample  = null;
+    public $foo     		= null;
+    public $sample  		= null;
+	private $_objectMap 	= null;
 
     public function __construct()
     {
-        $this->foo = new stdClass();
+		// set up the ticket object's data mapper
+		$this->_objectMap = new DataMapper();
+		$this->_objectMap->configure(array(
+			'title'	=> new MapItem(array(
+				'map:input' 	=> 'tickets->name',
+				'map:output'	=> 'mytitle',
+				'alias'		=> 'mTitle'
+			))
+		));
+				
+		//-------------------
+        /*$this->foo = new stdClass();
         $this->foo->bar = 'baz';
-
         $this->foo->myarr = array('blah');
 
-        $this->sample = new Sample();
+        $this->sample = new Sample();*/
     }
+
+	public function returnMapped($sample)
+	{
+		// return the data from our $responseObject mapped using our map
+		if($this->_objectMap != null){
+			
+			$this->_objectMap->setSource($sample);
+			$this->_objectMap->execute();
+			
+			//var_dump($this->_objectMap);
+			return $this->_objectMap;
+			
+		}else{
+			return $responseObj;
+		}
+	}
     
     public function foo()
     {
         echo 'Ticket::foo';
     }
 }
+$sample = new Sample();
+$sample->tickets = new stdClass();
+$sample->tickets->name = "i'll be mytitle";
+
+// remap tickets->name to $return->mTitle
 $ticket = new Ticket();
+$return = $ticket->returnMapped($sample);
+echo 'end: '.$return->mTitle."\n";
 
-class mnDecorate extends MapDecorator
-{
-    public function decorate($data)
-    {
-        
-    }
-}
 //--------------
-
-$decoratorOne = new mnDecorate();
-
 $dm = new DataMapper();
 
 $dm->configure(array(
@@ -76,11 +100,10 @@ $dm->configure(array(
 	)),
     'middle_name' => new MapItem(array(
         'inputMap'          => 'testing middle name',
-        'outputMap'         => 'property',
-        //'outputDecorator'   => $decoratorOne
+        'outputMap'         => 'property'
     ))
 ));
-$dm->execute();
+//$dm->execute();
 /*
 echo 'fname:'.$dm->firstName."\n";
 
@@ -90,7 +113,7 @@ echo 'myarr: '; var_dump($dm->testing->getValue());
 
 echo 'fullpath: '; var_dump($dm->last_name->map->to->lname);
 */
-echo 'fullpath: '; var_dump($dm->last_name->map->to->lname);
+//echo 'fullpath: '; var_dump($dm->last_name->map->to->lname);
 
 echo "//--------------------------\n";
 echo "\n\n";
