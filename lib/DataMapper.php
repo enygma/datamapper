@@ -2,21 +2,41 @@
 
 class DataMapper 
 {
+	/**
+	 * Current mappings
+	 * @var array
+	 */
 	private $_mappings 	= null;
+	
+	/**
+	 * Source object (to pull values from)
+	 * @var object
+	 */
 	private $_sourceObj	= null;
+	
+	/**
+	 * Target object (to apply values to)
+	 * @var object
+	 */
+	private $_targetObj	= null;
 
     /**
      * Set up object with configuration settings
+	 *
      * @param array $settings Settings array
 	 * @param object $sourceObj[optional] If object is defined, used as source for mapping
      * @return void
      */
-	public function configure($settings,$sourceObj=null)
+	public function configure($settings,$sourceObj=null,$targetObj=null)
 	{
 		$this->_mappings = $settings;
 		if($sourceObj != null){
 			$this->_sourceObj = $sourceObj;
 		}
+		if($targetObj != null){
+			$this->_targetObj = $targetObj;
+		}
+		return $this;
 	}
 	
 	/**
@@ -27,10 +47,24 @@ class DataMapper
 	public function setSource($object)
 	{
 		$this->_sourceObj = $object;
+		return $this;
+	}
+	
+	/**
+	 * Set the target object
+	 *
+	 * @param object $object target object (by reference)
+	 * @return object $this Current instance
+	 */
+	public function setTarget(&$object)
+	{
+		$this->_targetObj = $object;
+		return $this;
 	}
 
     /**
      * Parse current mappings and run any custom actions
+	 *
      * @return void
      */
 	public function execute()
@@ -38,6 +72,8 @@ class DataMapper
 		// loop through the mappings and execute the actions
 		if($this->_mappings != null){
 			foreach($this->_mappings as $property => $map){
+			$map->_result = null;
+				
                 if(get_class($map) != 'MapItem'){
                     continue;
                 }
@@ -63,10 +99,12 @@ class DataMapper
 							$value = array($this->_sourceObj,$value);
 						}
 						
-						$this->$methodName($this->_mappings[$property],$value);
+						$rval = $this->$methodName($this->_targetObj,$value);
+						$map->_result[$name] = $rval;
 					}
 				}
 			}
+			return $this->_targetObj;
 		}
 	}
 	
@@ -98,7 +136,7 @@ class DataMapper
      * @param string $mapValue Custom mapping path
      * @return void
      */
-	public function _inputMap(&$mapObject,$mapValue)
+	public function _inputMap($mapObject,$mapValue)
 	{
 		$expand = new ExpandObject();
 
@@ -108,6 +146,7 @@ class DataMapper
 		}
 		
 		$mapObject->_value = $returnValue;
+		return $mapObject;
 	}
 	
 	/**

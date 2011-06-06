@@ -12,7 +12,7 @@ class ExpandObject
 		}
 		return $object;
 	}
-    public function apply($object,$path,$value)
+    public function apply($object,$path,$value=null)
     {
         $pathParts  = explode('->',$path);
         $ref        = $object;
