@@ -1,7 +1,7 @@
 <?php
-include_once 'lib/DataMapper.php';
-include_once 'lib/ExpandObject.php';
-include_once 'lib/MapItem.php';
+include_once '../lib/DataMapper.php';
+include_once '../lib/ExpandObject.php';
+include_once '../lib/MapItem.php';
 
 class UserModel {
 	
